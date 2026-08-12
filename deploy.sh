@@ -23,45 +23,47 @@ DO_COMPOSER=true
 
 for arg in "$@"; do
   case "$arg" in
-    --migrate)    DO_MIGRATE=true ;;
-    --seed)       DO_SEED=true; DO_MIGRATE=true ;;
+    --migrate)     DO_MIGRATE=true ;;
+    --seed)        DO_SEED=true; DO_MIGRATE=true ;;
     --no-composer) DO_COMPOSER=false ;;
-    *)            echo "Argument inconnu : $arg" >&2; exit 1 ;;
+    *) echo "Argument inconnu : $arg" >&2; exit 1 ;;
   esac
 done
 
-SSH="ssh -i $KEY -p $PORT $USER@$HOST"
-SCP="scp -i $KEY -P $PORT"
+SSH_OPTS="-o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=30"
+ssh_cmd() {
+  ssh -i "$KEY" -p "$PORT" $SSH_OPTS "$USER@$HOST" "$*"
+}
 
 echo "=== 1/4 Déploiement du code (git pull) ==="
-$SSH "cd ~/$REMOTE_DIR && git fetch origin main && git reset --hard origin/main" 
+ssh_cmd "cd ~/$REMOTE_DIR && git fetch origin main && git reset --hard origin/main"
 
 if [ "$DO_COMPOSER" = true ]; then
   echo "=== 2/4 Composer (--no-scripts : contourne proc_open) ==="
-  $SSH "cd ~/$REMOTE_DIR && composer install --prefer-dist --no-dev --no-scripts --no-interaction --optimize-autoloader"
+  ssh_cmd "cd ~/$REMOTE_DIR && composer install --prefer-dist --no-dev --no-scripts --no-interaction --optimize-autoloader"
 else
   echo "=== 2/4 Composer sauté (--no-composer) ==="
 fi
 
-echo "=== 3/4 Permissions + lien storage ==="
-$SSH "cd ~/$REMOTE_DIR && chmod -R 775 storage bootstrap/cache && ln -sfn ~/$REMOTE_DIR/storage/app/public $DOCROOT/storage"
+echo "=== 3/4 Post-install Laravel + perms + lien storage ==="
+ssh_cmd "cd ~/$REMOTE_DIR && php artisan package:discover && chmod -R 775 storage bootstrap/cache && ln -sfn ~/$REMOTE_DIR/storage/app/public $DOCROOT/storage"
 
 if [ "$DO_MIGRATE" = true ]; then
   if [ "$DO_SEED" = true ]; then
     echo "=== 4/4 Migrations + seed ==="
-    $SSH "cd ~/$REMOTE_DIR && php artisan migrate --force && php artisan db:seed --force"
+    ssh_cmd "cd ~/$REMOTE_DIR && php artisan migrate --force && php artisan db:seed --force"
   else
-    echo "=== 4/4 Migrations ==="
-    $SSH "cd ~/$REMOTE_DIR && php artisan migrate --force"
+    echo "=== 4/4 Migrations (sans seed) ==="
+    ssh_cmd "cd ~/$REMOTE_DIR && php artisan migrate --force"
   fi
 else
   echo "=== 4/4 Migrations ignorées (ajoutez --migrate ou --seed) ==="
 fi
 
-echo "=== Post-install Laravel (package:discover + caches) ==="
-$SSH "cd ~/$REMOTE_DIR && php artisan package:discover && php artisan config:cache && php artisan route:cache"
+echo "=== Rebuild des caches ==="
+ssh_cmd "cd ~/$REMOTE_DIR && php artisan config:cache && php artisan route:cache"
 
 echo "=== Santé de l'API ==="
-curl -s -o /dev/null -w "HTTP %{http_code}\n" https://api.agascom.com/api/v1/auth/login || true
+curl -s -o /dev/null -w "HTTP %{http_code}\n" https://api.agascom.com/api/v1/auth/login -X POST -d '{"email":"admin@complexe.ga","password":"password"}' -H "Content-Type: application/json" || true
 
 echo "=== Déploiement terminé ✅ ==="
