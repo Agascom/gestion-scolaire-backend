@@ -24,7 +24,7 @@ return new class extends Migration
             $table->boolean('publiee')->default(false);
             $table->timestamps();
 
-            $table->unique(['classe_id', 'matiere_id', 'trimestre_id', 'type', 'libelle']);
+            $table->unique(['classe_id', 'matiere_id', 'trimestre_id', 'type', 'libelle'], 'evals_classe_matiere_trimestre_type_libelle_unique');
             $table->index('school_id');
             $table->index('matiere_id');
             $table->index('trimestre_id');
