@@ -58,8 +58,8 @@ else
   echo "=== 4/4 Migrations ignorées (ajoutez --migrate ou --seed) ==="
 fi
 
-echo "=== Rebuild des caches ==="
-$SSH "cd ~/$REMOTE_DIR && php artisan config:cache && php artisan route:cache 2>/dev/null || true"
+echo "=== Post-install Laravel (package:discover + caches) ==="
+$SSH "cd ~/$REMOTE_DIR && php artisan package:discover && php artisan config:cache && php artisan route:cache"
 
 echo "=== Santé de l'API ==="
 curl -s -o /dev/null -w "HTTP %{http_code}\n" https://api.agascom.com/api/v1/auth/login || true
