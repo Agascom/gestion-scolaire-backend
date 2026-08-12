@@ -25,6 +25,7 @@ class ParentEleve extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'eleve_id',
         'nom',
         'prenom',
@@ -37,6 +38,11 @@ class ParentEleve extends Model
     public function eleve(): BelongsTo
     {
         return $this->belongsTo(Eleve::class, 'eleve_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

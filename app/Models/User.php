@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -61,6 +62,26 @@ class User extends Authenticatable
     public function ecoles(): HasMany
     {
         return $this->hasMany(School::class, 'id', 'school_id');
+    }
+
+    /**
+     * Fiches parents rattachées à ce compte (un parent peut avoir plusieurs enfants).
+     *
+     * @return HasMany<ParentEleve>
+     */
+    public function parentEleves(): HasMany
+    {
+        return $this->hasMany(ParentEleve::class, 'user_id');
+    }
+
+    /**
+     * Profil enseignant rattaché à ce compte.
+     *
+     * @return HasOne<Enseignant>
+     */
+    public function profilEnseignant(): HasOne
+    {
+        return $this->hasOne(Enseignant::class, 'user_id');
     }
 
     /**

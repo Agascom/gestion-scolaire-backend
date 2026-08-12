@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Resources\EcoleResource;
 use App\Http\Resources\UserResource;
+use App\Models\Eleve;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -38,7 +37,7 @@ class AuthController extends ApiController
         return $this->success([
             'token' => $token,
             'token_type' => 'Bearer',
-            'user' => new UserResource($user->load('ecole')),
+            'user' => $this->userPayload($user),
         ], 'Connexion réussie.');
     }
 
@@ -53,13 +52,62 @@ class AuthController extends ApiController
     }
 
     /**
-     * Utilisateur connecté (avec école et rôles).
+     * Utilisateur connecté (avec école, rôles et contexte du rôle).
      */
     public function user(Request $request): JsonResponse
     {
         return $this->success(
-            new UserResource($request->user()->load('ecole')),
+            $this->userPayload($request->user()),
             'Utilisateur récupéré.'
         );
+    }
+
+    /**
+     * Payload utilisateur : ressource standard enrichie du contexte du rôle.
+     *
+     * @return array<string, mixed>
+     */
+    private function userPayload(User $user): array
+    {
+        return array_merge(
+            (new UserResource($user->loadMissing('ecole')))->resolve(),
+            $this->contexteRole($user)
+        );
+    }
+
+    /**
+     * Contexte spécifique au rôle : élèves du parent, profil de l'enseignant.
+     *
+     * @return array<string, mixed>
+     */
+    private function contexteRole(User $user): array
+    {
+        $contexte = [];
+
+        if ($user->hasRole('parent')) {
+            $contexte['parent'] = $user->parentEleves()
+                ->with('eleve')
+                ->get()
+                ->pluck('eleve')
+                ->filter()
+                ->values()
+                ->map(fn (Eleve $eleve) => [
+                    'id' => $eleve->id,
+                    'matricule' => $eleve->matricule,
+                    'nom' => $eleve->nom,
+                    'prenom' => $eleve->prenom,
+                    'nom_complet' => $eleve->nom_complet,
+                    'sexe' => $eleve->sexe,
+                    'classe_actuelle' => optional($eleve->classeActuelle())?->only(['id', 'libelle']),
+                ]);
+        }
+
+        if ($user->hasRole('enseignant')) {
+            $contexte['profil_enseignant'] = optional($user->profilEnseignant)?->only([
+                'id', 'nom', 'prenom', 'specialite', 'email', 'telephone',
+            ]);
+        }
+
+        return $contexte;
     }
 }

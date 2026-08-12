@@ -16,10 +16,21 @@ class NotificationApp extends Model
 {
     use HasTenant, SoftDeletes;
 
+    /**
+     * Table migrée sous le nom `notifications_app`.
+     *
+     * @var string
+     */
+    protected $table = 'notifications_app';
+
     public const TYPE_PAIEMENT_RETARD = 'paiement_retard';
+
     public const TYPE_BULLETIN_PUBLIE = 'bulletin_publie';
+
     public const TYPE_NOTE_PUBLIEE = 'note_publiee';
+
     public const TYPE_ABSENCE = 'absence';
+
     public const TYPE_CONSEIL = 'conseil';
 
     /**

@@ -7,9 +7,11 @@ use App\Http\Controllers\Api\BulletinController;
 use App\Http\Controllers\Api\EcoleController;
 use App\Http\Controllers\Api\EleveController;
 use App\Http\Controllers\Api\EmploiDuTempsController;
+use App\Http\Controllers\Api\EnseignantController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\MaterielController;
 use App\Http\Controllers\Api\NoteController;
+use App\Http\Controllers\Api\ParentController;
 use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\UtilisateurController;
 use Illuminate\Support\Facades\Route;
@@ -115,5 +117,27 @@ Route::prefix('v1')->group(function () {
         Route::post('/annees/cloturer', [ArchivageController::class, 'cloturerAnnee']);
         Route::get('/archives', [ArchivageController::class, 'listeAnnexesArchives']);
         Route::get('/archives/{annee}', [ArchivageController::class, 'consulterArchive']);
+
+        // --- Espace Parents ---
+        Route::prefix('parent')->group(function () {
+            Route::get('/eleves', [ParentController::class, 'eleves']);
+            Route::get('/eleves/{eleve}/notes', [ParentController::class, 'notes']);
+            Route::get('/eleves/{eleve}/bulletins', [ParentController::class, 'bulletins']);
+            Route::get('/eleves/{eleve}/frais', [ParentController::class, 'frais']);
+            Route::get('/notifications', [ParentController::class, 'notifications']);
+            Route::post('/notifications/{notification}/lue', [ParentController::class, 'marquerNotificationLue']);
+        });
+
+        // --- Espace Enseignants ---
+        Route::prefix('enseignant')->group(function () {
+            Route::get('/me', [EnseignantController::class, 'me']);
+            Route::get('/mes-classes', [EnseignantController::class, 'mesClasses']);
+            Route::get('/classes/{classe}/eleves', [EnseignantController::class, 'effectifs']);
+            Route::get('/evaluations', [EnseignantController::class, 'evaluations']);
+            Route::post('/evaluations', [EnseignantController::class, 'creerEvaluation']);
+            Route::get('/emploi-du-temps', [EnseignantController::class, 'emploiDuTemps']);
+            Route::get('/absences', [EnseignantController::class, 'absences']);
+            Route::post('/absences', [EnseignantController::class, 'enregistrerAbsences']);
+        });
     });
 });

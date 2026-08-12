@@ -28,10 +28,7 @@ class EleveResource extends JsonResource
             'adresse' => $this->adresse,
             'photo_path' => $this->photo_path,
             'statut' => $this->statut,
-            'classe_actuelle' => $this->when(
-                $request->boolean('avec_classe'),
-                optional($this->classeActuelle())?->only(['id', 'libelle'])
-            ),
+            'classe_actuelle' => optional($this->classeActuelle())?->only(['id', 'libelle']),
             'parent' => $this->whenLoaded('parentEleve', new ParentResource($this->parentEleve)),
             'documents' => $this->whenLoaded('documents', EleveDocumentResource::collection($this->documents)),
             'created_at' => $this->created_at?->format('d/m/Y'),

@@ -22,6 +22,7 @@ class Enseignant extends Model
      */
     protected $fillable = [
         'school_id',
+        'user_id',
         'nom',
         'prenom',
         'telephone',
@@ -34,6 +35,11 @@ class Enseignant extends Model
     public function ecole(): BelongsTo
     {
         return $this->belongsTo(School::class, 'school_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

@@ -24,9 +24,7 @@ class EleveController extends ApiController
 {
     use UtiliseAnneeCourante;
 
-    public function __construct(private readonly AuditService $audit)
-    {
-    }
+    public function __construct(private readonly AuditService $audit) {}
 
     /**
      * Liste des élèves de l'école (filtres : classe, statut, recherche).
@@ -60,7 +58,7 @@ class EleveController extends ApiController
         $eleve = Eleve::with(['parentEleve', 'documents'])->findOrFail($id);
 
         return $this->success(
-            (new EleveResource($eleve))->withRequest(['avec_classe' => true]),
+            new EleveResource($eleve),
             'Élève récupéré.'
         );
     }
@@ -87,7 +85,7 @@ class EleveController extends ApiController
             'parent.est_tuteur' => ['nullable', 'boolean'],
         ]);
 
-        $eleve = DB::transaction(function () use ($data, $request) {
+        $eleve = DB::transaction(function () use ($data) {
             $schoolId = $this->schoolId();
 
             $annee = $this->anneeCourante();
