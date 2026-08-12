@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (! Schema::hasColumn('users', 'actif')) {
-                $table->boolean('actif')->default(true)->after('password');
+                $table->boolean('actif')->default(true);
             }
         });
     }
