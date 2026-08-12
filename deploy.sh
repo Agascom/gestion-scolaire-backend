@@ -15,7 +15,7 @@ PORT="65002"
 USER="u650924616"
 KEY="${SSH_KEY:-$HOME/.ssh/gestion_scolaire_deploy}"
 REMOTE_DIR="gestion-api"                    # ~/gestion-api
-DOCROOT="domains/api.agascom.com/public_html"
+DOCROOT="~/domains/api.agascom.com/public_html"
 
 DO_MIGRATE=false
 DO_SEED=false
