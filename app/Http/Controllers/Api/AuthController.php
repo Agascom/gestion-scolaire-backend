@@ -32,6 +32,10 @@ class AuthController extends ApiController
             return $this->error('Identifiants invalides.', 401);
         }
 
+        if (! $user->actif) {
+            return $this->error('Compte désactivé. Contactez l\'administrateur.', 403);
+        }
+
         $token = $user->createToken('api-gestion-scolaire')->plainTextToken;
 
         return $this->success([

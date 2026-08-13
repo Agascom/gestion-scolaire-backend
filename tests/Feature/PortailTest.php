@@ -30,7 +30,7 @@ class PortailTest extends TestCase
         // 1. Connexion superadmin
         $adminToken = $this->postJson('/api/v1/auth/login', [
             'email' => 'admin@complexe.ga',
-            'password' => 'password',
+            'password' => 'Demo1234!',
         ])->assertStatus(200)->json('data.token');
 
         // 2. Création de l'élève avec sa fiche parent
@@ -143,7 +143,7 @@ class PortailTest extends TestCase
 
         $adminToken = $this->postJson('/api/v1/auth/login', [
             'email' => 'admin@complexe.ga',
-            'password' => 'password',
+            'password' => 'Demo1234!',
         ])->json('data.token');
 
         $user = $this->withToken($adminToken)->postJson('/api/v1/utilisateurs', [

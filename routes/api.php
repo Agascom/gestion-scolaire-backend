@@ -28,8 +28,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // --- Authentification (publique) ---
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    // --- Authentification (publique, limitée en débit) ---
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
     // --- Routes authentifiées ---
     Route::middleware('auth:sanctum')->group(function () {

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AnneeAcademique;
-use App\Models\Classe;
 use App\Models\Cycle;
 use App\Models\Matiere;
 use App\Models\Niveau;
@@ -12,6 +11,7 @@ use App\Models\Trimestre;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
         $this->creerAnneesEtTrimestres();
         $this->creerCyclesEtNiveaux();
         $this->creerMatieres();
-        $this->creerClassesDemo();
+        $this->call(DemoDonneesSeeder::class);
     }
 
     /**
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@complexe.ga'],
             [
                 'name' => 'Super Administrateur',
-                'password' => 'password',
+                'password' => $this->motDePasseSeed(),
                 'school_id' => null,
             ]
         );
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'direction@complexe.ga'],
             [
                 'name' => 'Administratrice du Complexe',
-                'password' => 'password',
+                'password' => $this->motDePasseSeed(),
                 'school_id' => $ecole->id,
             ]
         );
@@ -196,37 +196,20 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Classes de démonstration : "6eme A" (Collège) et "Terminale D" (Lycée).
+     * Mot de passe des comptes de démonstration.
+     *
+     * En local / test : valeur de démo commune. En production : mot de passe
+     * aléatoire généré et affiché en console, à changer immédiatement.
      */
-    private function creerClassesDemo(): void
+    private function motDePasseSeed(): string
     {
-        $ecole = School::where('numero_agrement', 'AG-2025-001')->first();
-        if (! $ecole || empty($this->anneeDemo)) {
-            return;
+        if (app()->environment('production')) {
+            $motDePasse = Str::password(16);
+            $this->command?->warn("Mot de passe de démo généré (production) : {$motDePasse}");
+            return $motDePasse;
         }
 
-        $niveauSixieme = Niveau::where('libelle', '6eme')->first();
-        $niveauTerminale = Niveau::where('libelle', 'Terminale')->first();
-
-        $classes = [
-            ['niveau_id' => $niveauSixieme?->id, 'section' => 'A', 'libelle' => '6eme A'],
-            ['niveau_id' => $niveauTerminale?->id, 'section' => 'D', 'libelle' => 'Terminale D'],
-        ];
-
-        foreach ($classes as $classe) {
-            if (empty($classe['niveau_id'])) {
-                continue;
-            }
-
-            Classe::firstOrCreate(
-                [
-                    'school_id' => $ecole->id,
-                    'annee_academique_id' => $this->anneeDemo->id,
-                    'libelle' => $classe['libelle'],
-                ],
-                ['niveau_id' => $classe['niveau_id'], 'section' => $classe['section']]
-            );
-        }
+        return 'Demo1234!';
     }
 
     /**

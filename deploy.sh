@@ -64,6 +64,6 @@ echo "=== Rebuild des caches ==="
 ssh_cmd "cd ~/$REMOTE_DIR && php artisan config:cache && php artisan route:cache"
 
 echo "=== Santé de l'API ==="
-curl -s -o /dev/null -w "HTTP %{http_code}\n" https://api.agascom.com/api/v1/auth/login -X POST -d '{"email":"admin@complexe.ga","password":"password"}' -H "Content-Type: application/json" || true
+curl -s -o /dev/null -w "HTTP %{http_code}\n" https://api.agascom.com/up || true
 
 echo "=== Déploiement terminé ✅ ==="
