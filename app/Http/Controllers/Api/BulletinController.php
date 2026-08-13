@@ -8,6 +8,7 @@ use App\Http\Resources\ClasseResource;
 use App\Models\AnneeAcademique;
 use App\Models\Bulletin;
 use App\Models\Classe;
+use App\Models\Niveau;
 use App\Models\Trimestre;
 use App\Services\AuditService;
 use App\Services\BulletinService;
@@ -102,5 +103,71 @@ class BulletinController extends ApiController
             ]);
 
         return $this->success($classes, 'Classes récupérées.');
+    }
+
+    /**
+     * Création d'une classe pour l'année académique courante.
+     */
+    public function creerClasse(Request $request): JsonResponse
+    {
+        $annee = $this->anneeCourante();
+        if (! $annee) {
+            return $this->error('Aucune année académique courante. Veuillez en créer une.', 422);
+        }
+
+        $data = $request->validate([
+            'libelle' => ['required', 'string', 'max:255'],
+            'niveau_id' => ['required', 'exists:niveaux,id'],
+            'section' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $existe = Classe::where('annee_academique_id', $annee->id)
+            ->where('libelle', $data['libelle'])
+            ->exists();
+
+        if ($existe) {
+            return $this->error("La classe « {$data['libelle']} » existe déjà pour l'année courante.", 422);
+        }
+
+        $classe = Classe::create([
+            'school_id' => $this->schoolId(),
+            'annee_academique_id' => $annee->id,
+            'niveau_id' => $data['niveau_id'],
+            'section' => $data['section'] ?? null,
+            'libelle' => $data['libelle'],
+        ]);
+
+        $this->audit->log('classes', 'creation', "Création de la classe {$classe->libelle}");
+
+        return $this->success(new ClasseResource($classe->load('niveau')), 'Classe créée.', 201);
+    }
+
+    /**
+     * Modification d'une classe (libellé, section, niveau).
+     */
+    public function modifierClasse(Request $request, int $id): JsonResponse
+    {
+        $classe = Classe::findOrFail($id);
+
+        $data = $request->validate([
+            'libelle' => ['sometimes', 'string', 'max:255'],
+            'niveau_id' => ['sometimes', 'exists:niveaux,id'],
+            'section' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        if (isset($data['libelle'])) {
+            $conflit = Classe::where('annee_academique_id', $classe->annee_academique_id)
+                ->where('libelle', $data['libelle'])
+                ->where('id', '!=', $classe->id)
+                ->exists();
+            if ($conflit) {
+                return $this->error("La classe « {$data['libelle']} » existe déjà.", 422);
+            }
+        }
+
+        $classe->update($data);
+        $this->audit->log('classes', 'modification', "Modification de la classe {$classe->libelle}");
+
+        return $this->success(new ClasseResource($classe->load('niveau')), 'Classe mise à jour.');
     }
 }

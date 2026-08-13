@@ -47,6 +47,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/salles', [ReferenceController::class, 'salles']);
         Route::post('/salles', [ReferenceController::class, 'creerSalle']);
         Route::get('/classes', [BulletinController::class, 'classes']);
+        Route::post('/classes', [BulletinController::class, 'creerClasse']);
+        Route::put('/classes/{id}', [BulletinController::class, 'modifierClasse']);
 
         // Module Élèves
         Route::get('/eleves', [EleveController::class, 'index']);
@@ -62,6 +64,8 @@ Route::prefix('v1')->group(function () {
 
         // Module Enseignants
         Route::get('/enseignants', [EleveController::class, 'enseignants']);
+        Route::post('/enseignants', [EleveController::class, 'creerEnseignant']);
+        Route::put('/enseignants/{id}', [EleveController::class, 'modifierEnseignant']);
         Route::get('/repertoire', [EleveController::class, 'repertoire']);
 
         // Module Notes & évaluations

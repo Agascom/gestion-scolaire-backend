@@ -229,6 +229,61 @@ class EleveController extends ApiController
     }
 
     /**
+     * Création d'un enseignant.
+     */
+    public function creerEnseignant(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nom' => ['required', 'string', 'max:255'],
+            'prenom' => ['required', 'string', 'max:255'],
+            'telephone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'diplome' => ['nullable', 'string', 'max:255'],
+            'specialite' => ['nullable', 'string', 'max:255'],
+            'statut' => ['sometimes', 'in:titulaire,vacataire'],
+        ]);
+
+        $enseignant = Enseignant::create([
+            'school_id' => $this->schoolId(),
+            'user_id' => null,
+            'nom' => $data['nom'],
+            'prenom' => $data['prenom'],
+            'telephone' => $data['telephone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'diplome' => $data['diplome'] ?? null,
+            'specialite' => $data['specialite'] ?? null,
+            'statut' => $data['statut'] ?? 'titulaire',
+        ]);
+
+        $this->audit->log('enseignants', 'creation', "Création de l'enseignant {$enseignant->nom_complet}");
+
+        return $this->success(new EnseignantResource($enseignant->load('matiereClasses.matiere', 'matiereClasses.classe')), 'Enseignant créé.', 201);
+    }
+
+    /**
+     * Modification d'un enseignant.
+     */
+    public function modifierEnseignant(Request $request, int $id): JsonResponse
+    {
+        $enseignant = Enseignant::findOrFail($id);
+
+        $data = $request->validate([
+            'nom' => ['sometimes', 'string', 'max:255'],
+            'prenom' => ['sometimes', 'string', 'max:255'],
+            'telephone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'diplome' => ['nullable', 'string', 'max:255'],
+            'specialite' => ['nullable', 'string', 'max:255'],
+            'statut' => ['sometimes', 'in:titulaire,vacataire'],
+        ]);
+
+        $enseignant->update($data);
+        $this->audit->log('enseignants', 'modification', "Modification de l'enseignant {$enseignant->nom_complet}");
+
+        return $this->success(new EnseignantResource($enseignant->load('matiereClasses.matiere', 'matiereClasses.classe')), 'Enseignant mis à jour.');
+    }
+
+    /**
      * Récapitulatif global de l'école : effectifs, classes, frais, enseignants.
      */
     public function repertoire(Request $request): JsonResponse
