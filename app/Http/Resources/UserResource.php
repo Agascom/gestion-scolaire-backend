@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'ecole' => $this->whenLoaded('ecole', fn () => new EcoleResource($this->ecole)),
             'roles' => $this->getRoleNames(),
             'permissions' => $this->getAllPermissions()->pluck('name'),
+            'actif' => (bool) $this->actif,
         ];
     }
 }
