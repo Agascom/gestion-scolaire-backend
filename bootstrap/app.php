@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,11 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        // API pure : jamais de redirection vers une route web « login ».
+        // Une requête non authentifiée reçoit un JSON 401.
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // API pure : jamais de redirection vers une route « login » web.
-        // Une requête non authentifiée reçoit un JSON 401.
-        $exceptions->render(function (AuthenticationException $e, \Illuminate\Http\Request $request) {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
