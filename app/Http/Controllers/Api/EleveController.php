@@ -294,7 +294,11 @@ class EleveController extends ApiController
             'effectifs' => Eleve::count(),
             'classes' => ClasseResource::collection(Classe::when($annee, fn ($q) => $q->where('annee_academique_id', $annee->id))->get()),
             'enseignants' => Enseignant::count(),
-            'frais' => Frais::where('actif', true)->get(['id', 'libelle', 'montant']),
+            'frais' => Frais::where('actif', true)->get(['id', 'libelle', 'montant'])->map(fn ($f) => [
+                'id' => $f->id,
+                'libelle' => $f->libelle,
+                'montant' => (float) $f->montant,
+            ]),
         ], 'Répertoire de l\'école.');
     }
 }

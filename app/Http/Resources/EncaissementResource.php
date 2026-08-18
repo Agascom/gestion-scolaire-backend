@@ -23,7 +23,7 @@ class EncaissementResource extends JsonResource
                 'matricule' => $this->eleve->matricule,
             ]),
             'frais' => $this->whenLoaded('frais', $this->frais?->libelle),
-            'montant' => $this->montant,
+            'montant' => (float) $this->montant,
             'mode' => $this->mode,
             'reference' => $this->reference,
             'statut' => $this->statut,

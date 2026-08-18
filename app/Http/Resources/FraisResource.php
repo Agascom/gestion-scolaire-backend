@@ -18,7 +18,7 @@ class FraisResource extends JsonResource
         return [
             'id' => $this->id,
             'libelle' => $this->libelle,
-            'montant' => $this->montant,
+            'montant' => (float) $this->montant,
             'periodicite' => $this->periodicite,
             'cycle' => $this->whenLoaded('cycle', $this->cycle?->libelle),
             'classe' => $this->whenLoaded('classe', $this->classe?->libelle),

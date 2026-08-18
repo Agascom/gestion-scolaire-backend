@@ -81,7 +81,6 @@ class Eleve extends Model
     public function classes(): BelongsToMany
     {
         return $this->belongsToMany(Classe::class, 'classe_eleve')
-            ->using(TableClasse::class)
             ->withPivot(['school_id', 'annee_academique_id'])
             ->whereNull('classes.deleted_at');
     }

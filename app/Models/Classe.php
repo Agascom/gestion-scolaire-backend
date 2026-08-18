@@ -59,7 +59,6 @@ class Classe extends Model
     public function matieres(): BelongsToMany
     {
         return $this->belongsToMany(Matiere::class, 'matiere_classe')
-            ->using(MatiereClasse::class)
             ->withPivot(['school_id', 'enseignant_id', 'coefficient']);
     }
 
@@ -71,7 +70,6 @@ class Classe extends Model
     public function eleves(): BelongsToMany
     {
         return $this->belongsToMany(Eleve::class, 'classe_eleve')
-            ->using(TableClasse::class)
             ->withPivot(['school_id', 'annee_academique_id'])
             ->whereNull('eleves.deleted_at');
     }

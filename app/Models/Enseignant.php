@@ -60,7 +60,6 @@ class Enseignant extends Model
     public function classes(): BelongsToMany
     {
         return $this->belongsToMany(Classe::class, 'matiere_classe')
-            ->using(MatiereClasse::class)
             ->withPivot(['school_id', 'matiere_id', 'coefficient']);
     }
 
